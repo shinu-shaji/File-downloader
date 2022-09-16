@@ -1,3 +1,9 @@
+"""
+This project is to download large files by splitting them into small sizes and downloading them on multiple computers and later combining them into large files.
+               ---- (small files --computers 1 downloader)----+                     
+O(large file)--+--(small files --computer 2 downloader)-------+-------(large file)
+               ----(small files -- computer3 downloader)------+         
+"""
 import os
 import urllib2
 import ftplib
@@ -9,16 +15,18 @@ import time
 
 
 class DownloadFile(object):
-       
+    """    
+    The class that has all the function definitions and takes arguments like start byte and stop byte of the part of the file
+    """   
     
     def __init__(self, url,start=0,stop=0,localFileName=None, auth=None, timeout=120.0, autoretry=False, retries=5):
         """Note that auth argument expects a tuple, ('username','password')"""
-        self.start_bit=start
-        self.stop_bit=stop
-        self.url = url
+        self.start_bit=start #start byte
+        self.stop_bit=stop #stop byte
+        self.url = url # download url
         self.urlFileName = None
         self.progress = 0
-        self.fileSize = (self.stop_bit-self.start_bit)
+        self.fileSize = (self.stop_bit-self.start_bit) # Total file size
         self.localFileName = localFileName
         self.type = self.getType()
         self.auth = auth
@@ -96,11 +104,14 @@ class DownloadFile(object):
         """starts to resume HTTP"""
         
         self.cur = curSize
+        """ check if the file exists.
+              if the download file exists, resume download else create new file.
+        """
         if restart:
-            print "write"
+            print "create new file"
             f = open(self.localFileName , "wb")
         else:
-            print "appen"
+            print "append to the file"
             f = open(self.localFileName , "ab")
         if self.auth:
             self.__authHttp__()
@@ -111,6 +122,8 @@ class DownloadFile(object):
         print 'bytes=%s-%s' % (curSize, str(url_fsize))
         print "check 3"
         req = urllib2.Request(self.url)
+              
+        """ set the range header of the http request to select a chunk of the file to download"""      
         #req.headers['Range'] = 'bytes=%s-%s' % (curSize, self.getUrlFileSize())
         req.headers['Range'] = 'bytes=%s-%s' % (curSize, str(url_fsize))
         req.headers['User-Agent']='Mozilla/5.0'
@@ -238,8 +251,8 @@ def main():
             can_resume=0
             #url = get_url()
             #print url
-            #url ="https://d39.usercdn.com/d/z4lvrgcptwsdzrijshcmrvsudqwk4w773khrg3a664jmpd5rjfnbw6cuz6ab63xdd2zn45ce/army%20of%20one"
-            url ="http://87.120.36.18/Oceanofgames.com/Act_Of_Aggression_Reboot_Edition.iso?md5=9qq1ZBwFflBnlSpvx1LKQA&expires=1501905627"
+            
+            url =""
             downloader = DownloadFile(url)
             #downloader.localFileName="addict.zip"
             print downloader.localFileName
@@ -286,6 +299,12 @@ def splitbyte(part,url_):
         parts.append(range_)
     return parts
 def userinput():
+       """
+       Collect download URL.
+       Select how many parts you want to split the file.
+       Select the part you want to download.
+       
+       """
     start = 0
     stop = 0
     print("do you want the last session y or n : ")
@@ -321,7 +340,15 @@ def userinput():
         _file_.close()
         return data
     return url,start,stop
+
+
 def maind():
+       """
+       Collect download URL.
+       Select how many parts you want to split the file.
+       Select the part you want to download.
+       
+       """
     data= userinput()
     downloader = DownloadFile(url = data[0].strip(),start=int(data[1].strip()),stop=int(data[2].strip()))
     print downloader.getUrlFileSize()
